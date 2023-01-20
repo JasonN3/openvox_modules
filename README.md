@@ -5,6 +5,8 @@ This is a collection of Puppet modules that I commonly use that make management 
 
 ---
 ## Modules list
+1. [demo_webserver](demo_webserver/README.md)  
+FOR DEMO PURPOSES ONLY. This class will install a web server that does NOT start with the machine.
 1. [domain_join](domain_join/README.md)  
 This module will install and configure the required packages to join an Active Directory domain.
 1. [hashicorp_vault](hashicorp_vault/README.md)  
