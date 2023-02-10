@@ -81,6 +81,19 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
   ```
 - Any other sudo access you would like to grant to AD groups can be defined the same way.
 
+### Manually joining
+1) Make sure the machine's hostname is set to the FQDN. The machine hostname cannot be the shortname
+2) Join with OS information. The OS information is only set during joining.
+   ```bash
+   source /etc/os-release
+   adcli join -U *join_user* --os-name="${NAME}" --os-version="${VERSION}" --os-service-pack="${VERSION_ID}"
+   ```
+   Join without OS information
+   ```bash
+   adcli join -U *join_user*
+   ```
+   `*join_user*` is the AD account
+
 ## Testing that has been done
 - Disabling a user within AD will immediately block access to the machine.  
   Just like with Windows, anyone who is already logged in will stay logged in.
