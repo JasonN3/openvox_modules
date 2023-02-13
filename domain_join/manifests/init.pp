@@ -63,7 +63,12 @@ class domain_join (
 
   if $configure_chrony {
     class { 'chrony':
-      servers => $time_servers + [$currdomain],
+      servers => $time_servers.reduce( {}) |$cumulate, $server| {
+        $cumulate.merge( { "${server}" => ['iburst', 'prefer'] })
+      },
+      pools   => $currdomain.reduce( {}) |$cumulate, $server| {
+        $cumulate.merge( { "${server}" => ['iburst'] })
+      },
     }
   }
 
