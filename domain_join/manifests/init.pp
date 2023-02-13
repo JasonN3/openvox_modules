@@ -67,7 +67,7 @@ class domain_join (
         $tmp = merge($cumulate, { "${server}" => ['iburst', 'prefer'] })
         $tmp
       },
-      pools   => $currdomain.reduce( {}) |$cumulate, $server| {
+      pools   => [$currdomain].reduce( {}) |$cumulate, $server| {
         $tmp = merge($cumulate, { "${server}" => ['iburst'] })
         $tmp
       },
