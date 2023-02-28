@@ -161,7 +161,7 @@ class domain_join (
     ],
   }
 
-  file { '/etc/systemd/system/update_adcli':
+  file { '/etc/systemd/system/update_adcli.service':
     ensure  => file,
     content => template('domain_join/update_adcli.service.erb'),
     require => Exec['Join'],
