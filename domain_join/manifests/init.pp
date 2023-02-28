@@ -16,22 +16,28 @@
 # @param file_header        A commented header to put on each of the managed files. A global file header can be defined using the top-level variable file_header
 # @param time_servers       A list of time servers. The domain will automatically be added to the end of the list
 # @param configure_chrony   Configures Chrony using time servers in time_servers. Time synchronization is required for kerberos to function
+# @param smartcard          Enable smartcard authentication (disabled, enabled, required, lock-on-removal)
+# @param ad_trust           Certificate chain for ad certificates (used for smartcard authentication)
+# @param update_os_info     Configures a service to update the OS information on the AD object on startup
 # lint:endignore
 class domain_join (
-  String            $username,
-  Sensitive[String] $sensitive_password,
-  String            $global_admins,
-  String            $global_ssh,
-  String            $local_admins,
-  String            $local_ssh,
-  String            $sssd_home = '/home',
-  Optional[String]  $override_domain = undef,
-  Optional[String]  $domain_short = undef,
-  Optional[String]  $dns_subdomain = undef,
-  Boolean           $dnsupdate = true,
-  Optional[String]  $file_header = undef,
-  Array             $time_servers = [],
-  Boolean           $configure_chrony = true
+  String                                                     $username,
+  Sensitive[String]                                          $sensitive_password,
+  String                                                     $global_admins,
+  String                                                     $global_ssh,
+  String                                                     $local_admins,
+  String                                                     $local_ssh,
+  String                                                     $sssd_home        = '/home',
+  Optional[String]                                           $override_domain  = undef,
+  Optional[String]                                           $domain_short     = undef,
+  Optional[String]                                           $dns_subdomain    = undef,
+  Boolean                                                    $dnsupdate        = true,
+  Optional[String]                                           $file_header      = undef,
+  Array                                                      $time_servers     = [],
+  Boolean                                                    $configure_chrony = true,
+  Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard        = 'disabled'
+  Optional[Array[String]]                                    $smartcard_trust  = undef
+  Boolean                                                    $update_os_info   = false
 ) {
   if $override_domain {
     $currdomain = $override_domain
@@ -111,6 +117,15 @@ class domain_join (
     ensure => installed,
   }
 
+  if $smartcard != 'disabled' {
+    file { 'sssd_auth_ca_db':
+      ensure  => file,
+      content => template('domain_join/sssd_auth_ca_db.pem.erb'),
+      require => Package['sssd'],
+      notify  => Service['sssd'],
+    }
+  }
+
   if($override_domain) {
     # lint:ignore:140chars
     $command = Sensitive("bash -c 'source /etc/os-release; echo -n \"${$sensitive_password.unwrap}\" | adcli join -H ${forced_fqdn} -D ${currdomain} -U \"${username}\" --stdin-password --os-name=\"\${NAME}\" --os-version=\"\${VERSION}\" --os-service-pack=\"\${VERSION_ID}\"'")
@@ -135,6 +150,17 @@ class domain_join (
       File['/etc/krb5.conf'],
       File['/etc/sssd/sssd.conf'],
     ],
+  }
+
+  file { '/etc/systemd/system/update_adcli':
+    ensure => file,
+    content => template('domain_join/update_adcli.service.erb'),
+    require => Exec['Join'],
+    notify  => Service['update_adcli'],
+  }
+
+  service { 'update_adcli':
+    enabled => true
   }
 
   file { '/etc/krb5.conf':
@@ -223,8 +249,26 @@ class domain_join (
     }
   }
 
+  case $smartcard {
+    'disabled': {
+      $enable_smartcard = ''
+    }
+    'enabled': {
+      $enable_smartcard = '--with-smartcard'
+    }
+    'required': {
+      $enable_smartcard = '--with-smartcard-required'
+    }
+    'lock-on-removal': {
+      $enable_smartcard = '--with-smartcard-lock-on-removal'
+    }
+    default: {
+      err('How??')
+    }
+  }
+
   exec { 'Enable SSSD Authentication':
-    command     => $enablesssd,
+    command     => "${enablesssd} ${enable_smartcard}",
     subscribe   => [
       Exec['Join'],
     ],

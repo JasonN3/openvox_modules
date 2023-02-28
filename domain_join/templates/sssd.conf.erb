@@ -22,6 +22,12 @@ simple_allow_groups = <%= @global_admins -%>, <%= @global_ssh -%>, <%= @local_ad
 ignore_group_members = true
 ad_gpo_access_control = disabled
 ad_enable_gc = false
+ad_use_ldaps = true
+<% if @smartcard != 'disabled' -%>
+ldap_user_certificate = userCertificate;binary
+[pam]
+pam_cert_auth = true
+<% end -%>
 [sssd]
 services = nss, pam
 config_file_version = 2
