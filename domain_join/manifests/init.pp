@@ -35,8 +35,8 @@ class domain_join (
   Optional[String]                                           $file_header      = undef,
   Array                                                      $time_servers     = [],
   Boolean                                                    $configure_chrony = true,
-  Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard        = 'disabled'
-  Optional[Array[String]]                                    $smartcard_trust  = undef
+  Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard        = 'disabled',
+  Optional[Array[String]]                                    $ad_trust         = undef,
   Boolean                                                    $update_os_info   = false
 ) {
   if $override_domain {
@@ -153,14 +153,14 @@ class domain_join (
   }
 
   file { '/etc/systemd/system/update_adcli':
-    ensure => file,
+    ensure  => file,
     content => template('domain_join/update_adcli.service.erb'),
     require => Exec['Join'],
     notify  => Service['update_adcli'],
   }
 
   service { 'update_adcli':
-    enabled => true
+    enabled => true,
   }
 
   file { '/etc/krb5.conf':
