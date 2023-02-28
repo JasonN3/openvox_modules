@@ -164,7 +164,7 @@ class domain_join (
   }
 
   service { 'update_adcli':
-    enabled => true,
+    enable => true,
   }
 
   file { '/etc/krb5.conf':
