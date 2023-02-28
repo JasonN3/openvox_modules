@@ -122,10 +122,15 @@ class domain_join (
   }
 
   if $smartcard != 'disabled' {
+    file { '/etc/sssd/pki':
+      ensure  => directory,
+      require => Package['sssd'],
+    }
+
     file { '/etc/sssd/pki/sssd_auth_ca_db.pem':
       ensure  => file,
       content => template('domain_join/sssd_auth_ca_db.pem.erb'),
-      require => Package['sssd'],
+      require => File['/etc/sssd/pki'],
       notify  => Service['sssd'],
     }
   }
