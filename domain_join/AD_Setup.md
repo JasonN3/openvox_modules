@@ -107,6 +107,8 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
   `pkinit_anchors` will tell krb5 where to look for the DC's ca chain
   `pkinit_kdc_hostname` is required because the smartcard certificate can contain the domain in lowercase, which will cause the authentication to fail.
 
+- Enable the feature by using `authselect enable-feature with-smartcard`. You can see the other available features by running `authselect list-features sssd`
+
 ## Manually joining
 1) Make sure the machine's hostname is set to the FQDN. The machine hostname cannot be the shortname
 2) Join with OS information. The OS information is only set during joining.
@@ -119,6 +121,10 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
    adcli join -U *join_user*
    ```
    `*join_user*` is the AD account
+3) Enable logins using sssd
+  ```bash
+  authselect select sssd with-mkhomedir --force
+  ```
 
 ## Keeping the OS information up to date
 By default, the computer object will not have enough permissions to update its own OS information. Make sure to go in to AD and grant `SELF` the ability to write each of the OS fields. Once added, the following commands can be used to update the AD object with the latest OS information
