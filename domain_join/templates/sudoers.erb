@@ -1,4 +1,4 @@
 # <%= @file_header_local %>
 
-%<%= @global_admins.downcase.gsub(' ', '\ ') -%>  ALL=(ALL)      <% if @global_nopasswd %>NOPASSWD: <%= @nopasswd %><% end %>
-%<%= @local_admins.downcase.gsub(' ', '\ ').gsub('%hostname%', @hostname) -%>  ALL=(ALL)      <% if @local_nopasswd %>NOPASSWD: <%= @nopasswd %><% end %>
+%<%= @global_admins.downcase.gsub(' ', '\ ') -%>  ALL=(ALL)      <% if @global_nopasswd %>NOPASSWD: <% end %>ALL
+%<%= @local_admins.downcase.gsub(' ', '\ ').gsub('%hostname%', @hostname) -%>  ALL=(ALL)      <% if @local_nopasswd %>NOPASSWD: <% end %>ALL
