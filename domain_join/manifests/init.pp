@@ -8,6 +8,8 @@
 # @param global_ssh         Ad AD group that will have ssh access to all machines. Sudo privileges can be specified separately
 # @param local_admins       A template for an AD group that will have full sudo access on the specific machine. `%HOSTNAME%` will be replaced with the machine's shortname
 # @param local_ssh          A template for an AD group that will have ssh access to the specific machine. `%HOSTNAME%` will be replaced  with the machine's shortname
+# @param global_nopasswd    Commands that global_admins can run without a password
+# @param local_nopasswd     Commands that local_admins can run without a password
 # @param sssd_home          The directory where all home directories should be created. Defaults to /home
 # @param override_domain    Force the name of the domain to join. This can allow the machine's hostname to be set to the short name, but with less sucess
 # @param domain_short       The NetBIOS name for the domain
@@ -27,6 +29,8 @@ class domain_join (
   String                                                     $global_ssh,
   String                                                     $local_admins,
   String                                                     $local_ssh,
+  String                                                     $global_nopasswd,
+  String                                                     $local_nopasswd,
   String                                                     $sssd_home        = '/home',
   Optional[String]                                           $override_domain  = undef,
   Optional[String]                                           $domain_short     = undef,
