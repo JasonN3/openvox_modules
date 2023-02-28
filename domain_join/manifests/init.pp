@@ -122,7 +122,7 @@ class domain_join (
   }
 
   if $smartcard != 'disabled' {
-    file { 'sssd_auth_ca_db':
+    file { '/etc/sssd/pki/sssd_auth_ca_db.pem':
       ensure  => file,
       content => template('domain_join/sssd_auth_ca_db.pem.erb'),
       require => Package['sssd'],
