@@ -263,13 +263,13 @@ class domain_join (
       $enable_smartcard = ''
     }
     'enabled': {
-      $enable_smartcard = '--with-smartcard'
+      $enable_smartcard = 'with-smartcard'
     }
     'required': {
-      $enable_smartcard = '--with-smartcard-required'
+      $enable_smartcard = 'with-smartcard-required'
     }
     'lock-on-removal': {
-      $enable_smartcard = '--with-smartcard-lock-on-removal'
+      $enable_smartcard = 'with-smartcard-lock-on-removal'
     }
     default: {
       err('How??')
