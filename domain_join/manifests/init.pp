@@ -2,25 +2,26 @@
 # The machine's hostname should be set to the FQDN
 #
 # lint:ignore:140chars
-# @param username           The username used to domain join
-# @param sensitive_password The password used to domain join
-# @param global_admins      An AD group that will have full sudo access on all machines. This will also include ssh access
-# @param global_ssh         Ad AD group that will have ssh access to all machines. Sudo privileges can be specified separately
-# @param local_admins       A template for an AD group that will have full sudo access on the specific machine. `%HOSTNAME%` will be replaced with the machine's shortname
-# @param local_ssh          A template for an AD group that will have ssh access to the specific machine. `%HOSTNAME%` will be replaced  with the machine's shortname
-# @param global_nopasswd    Allow sudo by global_admins without a password
-# @param local_nopasswd     Allow sudo by local_admins without a password
-# @param sssd_home          The directory where all home directories should be created. Defaults to /home
-# @param override_domain    Force the name of the domain to join. This can allow the machine's hostname to be set to the short name, but with less sucess
-# @param domain_short       The NetBIOS name for the domain
-# @param dns_subdomain      The subdomain that the dns records should be registered to. Example: for machine1.sd.example.com, sd would be the subdomain
-# @param dnsupdate          If SSSD should create the dns record for the machine. Secure updates are supported
-# @param file_header        A commented header to put on each of the managed files. A global file header can be defined using the top-level variable file_header
-# @param time_servers       A list of time servers. The domain will automatically be added to the end of the list
-# @param configure_chrony   Configures Chrony using time servers in time_servers. Time synchronization is required for kerberos to function
-# @param smartcard          Enable smartcard authentication (disabled, enabled, required, lock-on-removal)
-# @param ad_trust           Certificate chain for ad certificates (used for smartcard authentication)
-# @param update_os_info     Configures a service to update the OS information on the AD object on startup
+# @param username             The username used to domain join
+# @param sensitive_password   The password used to domain join
+# @param global_admins        An AD group that will have full sudo access on all machines. This will also include ssh access
+# @param global_ssh           Ad AD group that will have ssh access to all machines. Sudo privileges can be specified separately
+# @param local_admins         A template for an AD group that will have full sudo access on the specific machine. `%HOSTNAME%` will be replaced with the machine's shortname
+# @param local_ssh            A template for an AD group that will have ssh access to the specific machine. `%HOSTNAME%` will be replaced  with the machine's shortname
+# @param global_nopasswd      Allow sudo by global_admins without a password
+# @param local_nopasswd       Allow sudo by local_admins without a password
+# @param sssd_home            The directory where all home directories should be created. Defaults to /home
+# @param override_domain      Force the name of the domain to join. This can allow the machine's hostname to be set to the short name, but with less sucess
+# @param domain_short         The NetBIOS name for the domain
+# @param dns_subdomain        The subdomain that the dns records should be registered to. Example: for machine1.sd.example.com, sd would be the subdomain
+# @param dnsupdate            If SSSD should create the dns record for the machine. Secure updates are supported
+# @param file_header          A commented header to put on each of the managed files. A global file header can be defined using the top-level variable file_header
+# @param time_servers         A list of time servers. The domain will automatically be added to the end of the list
+# @param configure_chrony     Configures Chrony using time servers in time_servers. Time synchronization is required for kerberos to function
+# @param smartcard            Enable smartcard authentication (disabled, enabled, required, lock-on-removal)
+# @param ad_trust             Certificate chain for ad certificates (used for smartcard authentication)
+# @param update_os_info       Configures a service to update the OS information on the AD object on startup
+# @param enable_smartcard_ssh Enable smartcard authentication for SSH
 # lint:endignore
 class domain_join (
   String                                                     $username,
@@ -29,19 +30,20 @@ class domain_join (
   String                                                     $global_ssh,
   String                                                     $local_admins,
   String                                                     $local_ssh,
-  Boolean                                                    $global_nopasswd  = false,
-  Boolean                                                    $local_nopasswd   = false,
-  String                                                     $sssd_home        = '/home',
-  Optional[String]                                           $override_domain  = undef,
-  Optional[String]                                           $domain_short     = undef,
-  Optional[String]                                           $dns_subdomain    = undef,
-  Boolean                                                    $dnsupdate        = true,
-  Optional[String]                                           $file_header      = undef,
-  Array                                                      $time_servers     = [],
-  Boolean                                                    $configure_chrony = true,
-  Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard        = 'disabled',
-  Optional[Array[String]]                                    $ad_trust         = undef,
-  Boolean                                                    $update_os_info   = false
+  Boolean                                                    $global_nopasswd      = false,
+  Boolean                                                    $local_nopasswd       = false,
+  String                                                     $sssd_home            = '/home',
+  Optional[String]                                           $override_domain      = undef,
+  Optional[String]                                           $domain_short         = undef,
+  Optional[String]                                           $dns_subdomain        = undef,
+  Boolean                                                    $dnsupdate            = true,
+  Optional[String]                                           $file_header          = undef,
+  Array                                                      $time_servers         = [],
+  Boolean                                                    $configure_chrony     = true,
+  Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard            = 'disabled',
+  Optional[Array[String]]                                    $ad_trust             = undef,
+  Boolean                                                    $update_os_info       = false,
+  Boolean                                                    $enable_smartcard_ssh = false
 ) {
   if $override_domain {
     $currdomain = $override_domain
@@ -328,6 +330,27 @@ class domain_join (
       match             => '.*pam_systemd\.so.*',
       match_for_absence => true,
       require           => Exec['Enable SSSD Authentication'],
+    }
+  }
+
+  if $enable_smartcard_ssh {
+    file_line { 'Set AuthorizedKeysCommand':
+      ensure => present,
+      path   => '/etc/ssh/sshd_config',
+      line   => 'AuthorizedKeysCommand /usr/bin/sss_ssh_authorizedkeys',
+      match  => '#?AuthorizedKeysCommand.*',
+      notify => Service['sshd'],
+    }
+
+    file_line { 'Set AuthorizedKeysCommandUser':
+      ensure => present,
+      path   => '/etc/ssh/sshd_config',
+      line   => 'AuthorizedKeysCommandUser nobody',
+      match  => '#?AuthorizedKeysCommandUser.*',
+      notify => Service['sshd'],
+    }
+
+    service { 'sshd':
     }
   }
 }
