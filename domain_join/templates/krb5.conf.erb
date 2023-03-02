@@ -19,6 +19,12 @@
 
 
 [realms]
+<% if @smartcard != 'disabled' -%>
+  <%= @currdomain.upcase -%> = {
+    pkinit_anchors = DIR:/etc/sssd/pki
+    pkinit_kdc_hostname = <%= @currdomain.upcase %>
+  }
+<% end -%>
 
 [domain_realm]
 

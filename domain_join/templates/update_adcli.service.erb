@@ -1,0 +1,11 @@
+[Unit]
+Description=Updates AD with the current OS information
+After=sssd.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/os-release
+ExecStart=/usr/sbin/adcli update --os-name="${NAME}" --os-version="${VERSION}" --os-service-pack="${VERSION_ID}"
+
+[Install]
+WantedBy=multi-user.target

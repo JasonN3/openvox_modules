@@ -21,34 +21,37 @@
 ### Nesting
 Nesting within the AD groups is allowed. If you would like to create a group that has access to multiple machines, you do not need to change the configuration on the RHEL machine. Instead you can make the new group a member of the access group for the specific machines. This will allow you to control the access directly from AD.
 
-### Configuration for SSH access
-- When configuring `/etc/sssd/sssd.conf`, make sure the `access_provider` is set to `simple` and `simple_allow_groups` is set to a comma delimetered list of the groups you created above. If you would like to be able to grant sudo access without ssh access, you can exclude the sudo groups.
-  Example:
+## Configuration for SSH access
+- `/etc/sssd/sssd.conf`
+  Make sure the `access_provider` is set to `simple` and `simple_allow_groups` is set to a comma delimetered list of the groups you created above. If you would like to be able to grant sudo access without ssh access, you can exclude the sudo groups.
+  Example (Replace DOMAIN with your domain's FQDN in all uppercase):
   ```ini
   [domain/DOMAIN]
-    access_provider = simple
-    auth_provider = ad
-    chpass_provider = ad
-    id_provider = ad
-    dyndns_update = true
-    override_homedir = /home/%u
-    override_shell = /bin/bash
-    default_shell = /bin/bash
-    ldap_idmap_range_size = 4000000
-    cache_credentials = true
-    simple_allow_groups = DOMAIN Linux sudo access, DOMAIN Linux ssh access, DOMAIN Linux *hostname* sudo access, DOMAIN Linux *hostname* ssh access
-    ignore_group_members = true
-    ad_gpo_access_control = disabled
-    ad_enable_gc = false
-    [sssd]
-    services = nss, pam
-    config_file_version = 2
-    domains = DOMAIN
-    ```
-    Make sure to set `ad_enable_gc` to `false` if you have multiple domains in your forest. The global catalog may not contain all information about the users which can cause login issues.
-- Make sure to update your `/etc/krb5.conf` file to set your default_domain so you don't need to specify the domain for every login
+  access_provider = simple
+  auth_provider = ad
+  chpass_provider = ad
+  id_provider = ad
+  dyndns_update = true
+  override_homedir = /home/%u
+  override_shell = /bin/bash
+  default_shell = /bin/bash
+  ldap_idmap_range_size = 4000000
+  cache_credentials = true
+  simple_allow_groups = DOMAIN Linux sudo access, DOMAIN Linux ssh access, DOMAIN Linux *hostname* sudo access, DOMAIN Linux *hostname* ssh access
+  ignore_group_members = true
+  ad_gpo_access_control = disabled
+  ad_enable_gc = false
+  [sssd]
+  services = nss, pam
+  config_file_version = 2
+  domains = DOMAIN
+  ```
+  - Make sure to set `ad_enable_gc` to `false` if you have multiple domains in your forest. The global catalog may not contain all information about the users which can cause login issues.  
+  - If you would like to enable ldaps (recommended), add the CA chain to the trust anchors and then add `ad_use_ldaps = true` under the domain section
+- `/etc/krb5.conf`
+  Make sure to set your default_domain so you don't need to specify the domain for every login
   Example:
-  ```init
+  ```ini
     [logging]
     default = FILE:/var/log/krb5libs.log
     kdc = FILE:/var/log/krb5kdc.log
@@ -71,7 +74,7 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
     ```
     You do not need to specify anything under `realms` or `domain_realm`. SSSD will automatically discover that information from DNS.
 
-### Configuration for SUDO access
+## Configuration for SUDO access
 - Create a file in /etc/sudoers.d using `visudo -f /etc/sudoers.d/DOMAIN` and specify the default sudo access for members of the AD `SUDO` groups.  
   **Make sure to escape any spaces with a `\`**  
   Example:
@@ -81,7 +84,41 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
   ```
 - Any other sudo access you would like to grant to AD groups can be defined the same way.
 
-### Manually joining
+## Smartcard configuration
+- `/etc/sssd/pki/sssd_auth_ca_db.pem`
+  In this file, include the certificate chain for your DCs. It does not need to contain your DCs themselves. During the smartcard process, the client will validate your DC's certificate. Make sure to add the certs to your system's trusted CA list.
+- `/etc/sssd/sssd.conf`
+  - Add the following line under `[domain/DOMAIN]`
+    ```ini
+    ldap_user_certificate = userCertificate;binary
+    ```
+  - Add the following lines at the end of the file
+    ```ini
+    [pam]
+    pam_cert_auth = true
+    ```
+- `/etc/krb5.conf`
+  Add the following lines under `[realms]` replacing DOMAIN with your domain's FQDN in all uppercase
+  ```ini
+  DOMAIN = {
+    pkinit_anchors = DIR:/etc/sssd/pki
+    pkinit_kdc_hostname = DOMAIN
+  }
+  ```
+  `pkinit_anchors` will tell krb5 where to look for the DC's ca chain
+  `pkinit_kdc_hostname` is required because the smartcard certificate can contain the domain in lowercase, which will cause the authentication to fail.
+
+- Enable the feature by using `authselect enable-feature with-smartcard`. You can see the other available features by running `authselect list-features sssd`
+
+### Enable SSH Smartcard authentication
+This only seems to work on RHEL 8 or above.  
+1) Verify that the smartcard cert will be read properly from AD by running `sss_ssh_authorizedkeys ${USER}`. If a public key is not returned, verify that smartcard authentication is configured properly
+2) Edit `/etc/ssh/sshd_config` and set `AuthorizedKeysCommand` to `/usr/bin/sss_ssh_authorizedkeys` and `AuthorizedKeysCommandUser` to `nobody`
+3) Restart `sshd`
+
+To SSH from a client, use the `ssh` option `PKCS11Provider /usr/lib64/opensc-pkcs11.so`. If the smartcard matches a public key for the user, it will then prompt for the smartcard pin/password.
+
+## Manually joining
 1) Make sure the machine's hostname is set to the FQDN. The machine hostname cannot be the shortname
 2) Join with OS information. The OS information is only set during joining.
    ```bash
@@ -93,6 +130,16 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
    adcli join -U *join_user*
    ```
    `*join_user*` is the AD account
+3) Enable logins using sssd
+  ```bash
+  authselect select sssd with-mkhomedir --force
+  ```
+
+## Keeping the OS information up to date
+By default, the computer object will not have enough permissions to update its own OS information. Make sure to go in to AD and grant `SELF` the ability to write each of the OS fields. Once added, the following commands can be used to update the AD object with the latest OS information
+```bash
+source /etc/os-release; /usr/sbin/adcli update --os-name="${NAME}" --os-version="${VERSION}" --os-service-pack="${VERSION_ID}"
+```
 
 ## Testing that has been done
 - Disabling a user within AD will immediately block access to the machine.  
