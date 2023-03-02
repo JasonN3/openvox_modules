@@ -131,13 +131,17 @@ class domain_join (
       ensure  => file,
       content => template('domain_join/sssd_auth_ca_db.pem.erb'),
       require => File['/etc/sssd/pki'],
-      notify  => Service['sssd'],
+      notify  => [
+        Service['sssd'],
+        Exec['Trust domain ca chain']
+      ],
     }
 
     exec { 'Trust domain ca chain':
-      command => 'trust anchor /etc/sssd/pki/sssd_auth_ca_db.pem',
-      path    => $facts['path'],
-      require => File['/etc/sssd/pki/sssd_auth_ca_db.pem'],
+      command     => 'trust anchor /etc/sssd/pki/sssd_auth_ca_db.pem',
+      path        => $facts['path'],
+      require     => File['/etc/sssd/pki/sssd_auth_ca_db.pem'],
+      refreshonly => true,
     }
   }
 
