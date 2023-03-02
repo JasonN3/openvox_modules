@@ -46,7 +46,8 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
   config_file_version = 2
   domains = DOMAIN
   ```
-  Make sure to set `ad_enable_gc` to `false` if you have multiple domains in your forest. The global catalog may not contain all information about the users which can cause login issues.
+  - Make sure to set `ad_enable_gc` to `false` if you have multiple domains in your forest. The global catalog may not contain all information about the users which can cause login issues.  
+  - If you would like to enable ldaps (recommended), add the CA chain to the trust anchors and then add `ad_use_ldaps = true` under the domain section
 - `/etc/krb5.conf`
   Make sure to set your default_domain so you don't need to specify the domain for every login
   Example:
@@ -85,7 +86,7 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
 
 ## Smartcard configuration
 - `/etc/sssd/pki/sssd_auth_ca_db.pem`
-  In this file, include the certificate chain for your DCs. It does not need to contain your DCs themselves. During the smartcard process, the client will validate your DC's certificate.
+  In this file, include the certificate chain for your DCs. It does not need to contain your DCs themselves. During the smartcard process, the client will validate your DC's certificate. Make sure to add the certs to your system's trusted CA list.
 - `/etc/sssd/sssd.conf`
   - Add the following line under `[domain/DOMAIN]`
     ```ini
@@ -108,6 +109,14 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
   `pkinit_kdc_hostname` is required because the smartcard certificate can contain the domain in lowercase, which will cause the authentication to fail.
 
 - Enable the feature by using `authselect enable-feature with-smartcard`. You can see the other available features by running `authselect list-features sssd`
+
+### Enable SSH Smartcard authentication
+This only seems to work on RHEL 8 or above.  
+1) Verify that the smartcard cert will be read properly from AD by running `sss_ssh_authorizedkeys ${USER}`. If a public key is not returned, verify that smartcard authentication is configured properly
+2) Edit `/etc/ssh/sshd_config` and set `AuthorizedKeysCommand` to `/usr/bin/sss_ssh_authorizedkeys` and `AuthorizedKeysCommandUser` to `nobody`
+3) Restart `sshd`
+
+To SSH from a client, use the `ssh` option `PKCS11Provider /usr/lib64/opensc-pkcs11.so`. If the smartcard matches a public key for the user, it will then prompt for the smartcard pin/password.
 
 ## Manually joining
 1) Make sure the machine's hostname is set to the FQDN. The machine hostname cannot be the shortname
