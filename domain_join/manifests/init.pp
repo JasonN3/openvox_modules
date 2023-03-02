@@ -21,7 +21,7 @@
 # @param smartcard            Enable smartcard authentication (disabled, enabled, required, lock-on-removal)
 # @param ad_trust             Certificate chain for ad certificates (used for smartcard authentication)
 # @param update_os_info       Configures a service to update the OS information on the AD object on startup
-# @param enable_smartcard_ssh Enable smartcard authentication for SSH
+# @param enable_smartcard_ssh Enable smartcard authentication for SSH (Only seems to work on RHEL 8+)
 # lint:endignore
 class domain_join (
   String                                                     $username,
