@@ -338,7 +338,7 @@ class domain_join (
       ensure => present,
       path   => '/etc/ssh/sshd_config',
       line   => 'AuthorizedKeysCommand /usr/bin/sss_ssh_authorizedkeys',
-      match  => '#?AuthorizedKeysCommand.*',
+      match  => '#?AuthorizedKeysCommand .*',
       notify => Service['sshd'],
     }
 
@@ -346,7 +346,7 @@ class domain_join (
       ensure => present,
       path   => '/etc/ssh/sshd_config',
       line   => 'AuthorizedKeysCommandUser nobody',
-      match  => '#?AuthorizedKeysCommandUser.*',
+      match  => '#?AuthorizedKeysCommandUser .*',
       notify => Service['sshd'],
     }
 
