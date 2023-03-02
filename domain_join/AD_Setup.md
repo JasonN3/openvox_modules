@@ -105,7 +105,7 @@ Nesting within the AD groups is allowed. If you would like to create a group tha
     pkinit_kdc_hostname = DOMAIN
   }
   ```
-  `pkinit_anchors` will tell krb5 where to look for the DC's ca chain
+  `pkinit_anchors` will tell krb5 where to look for the DC's ca chain  
   `pkinit_kdc_hostname` is required because the smartcard certificate can contain the domain in lowercase, which will cause the authentication to fail.
 
 - Enable the feature by using `authselect enable-feature with-smartcard`. You can see the other available features by running `authselect list-features sssd`
