@@ -17,8 +17,10 @@ class hashicorp_vault::ssh_server (
 
   require hashicorp_vault::lib_binary
 
-  package { 'openssh-server':
-    ensure => installed,
+  unless defined(Package['openssh-server']) {
+    package { 'openssh-server':
+      ensure => installed,
+    }
   }
 
   if ($vault_public_key) {
@@ -46,10 +48,12 @@ class hashicorp_vault::ssh_server (
     require => Package['openssh-server'],
   }
 
-  service { 'sshd':
-    ensure  => running,
-    enable  => true,
-    require => Package['openssh-server'],
+  unless defined(Service['sshd']) {
+    service { 'sshd':
+      ensure  => running,
+      enable  => true,
+      require => Package['openssh-server'],
+    }
   }
 
   exec { 'generate ssh certificate':

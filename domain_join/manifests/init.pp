@@ -350,10 +350,18 @@ class domain_join (
       notify => Service['sshd'],
     }
 
-    ensure_resource(
-      'service',
-      'sshd',
-      {}
-    )
+    unless defined(Package['openssh-server']) {
+      package { 'openssh-server':
+        ensure => installed,
+      }
+    }
+
+    unless defined(Service['sshd']) {
+      service { 'sshd':
+        ensure  => running,
+        enable  => true,
+        require => Package['openssh-server'],
+      }
+    }
   }
 }
