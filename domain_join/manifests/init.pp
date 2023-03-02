@@ -350,7 +350,10 @@ class domain_join (
       notify => Service['sshd'],
     }
 
-    service { 'sshd':
-    }
+    ensure_resource(
+      'service',
+      'sshd',
+      {}
+    )
   }
 }
