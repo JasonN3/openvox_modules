@@ -238,29 +238,42 @@ class domain_join (
     }
 
     'RedHat': {
-      case $facts['os']['release']['major'] {
-        '7': {
-          $enablesssd = 'authconfig --enablesssd --enablesssdauth --enablemkhomedir --update'
-          package { 'authconfig':
-            ensure => installed,
+      case $facts['os']['name'] {
+        'Fedora': {
+          if $facts['os']['release']['major'] >= 37 {
+            $enablesssd = 'authselect select sssd with-mkhomedir --force'
+            package { 'authconfig':
+              ensure => installed,
+              name   => authselect,
+            }
           }
         }
-        '8': {
-          $enablesssd = 'authselect select sssd with-mkhomedir --force'
-          package { 'authconfig':
-            ensure => installed,
-            name   => authselect,
+        'RedHat': {
+          case $facts['os']['release']['major'] {
+            '7': {
+              $enablesssd = 'authconfig --enablesssd --enablesssdauth --enablemkhomedir --update'
+              package { 'authconfig':
+                ensure => installed,
+              }
+            }
+            '8': {
+              $enablesssd = 'authselect select sssd with-mkhomedir --force'
+              package { 'authconfig':
+                ensure => installed,
+                name   => authselect,
+              }
+            }
+            '9': {
+              $enablesssd = 'authselect select sssd with-mkhomedir --force'
+              package { 'authconfig':
+                ensure => installed,
+                name   => authselect,
+              }
+            }
+            default: {
+              err('Unknown OS')
+            }
           }
-        }
-        '9': {
-          $enablesssd = 'authselect select sssd with-mkhomedir --force'
-          package { 'authconfig':
-            ensure => installed,
-            name   => authselect,
-          }
-        }
-        default: {
-          err('Unknown OS')
         }
       }
     }

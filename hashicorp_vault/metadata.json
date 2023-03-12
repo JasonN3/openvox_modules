@@ -29,6 +29,12 @@
         ]
       },
       {
+        "operatingsystem": "Fedora",
+        "operatingsystemrelease": [
+          "37"
+        ]
+      },
+      {
         "operatingsystem": "Ubuntu",
         "operatingsystemrelease": [
           "18.04"
