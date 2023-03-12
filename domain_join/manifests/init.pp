@@ -201,13 +201,6 @@ class domain_join (
     require => Package['sssd'],
   }
 
-  #file { '/var/log/sssd/':
-  #  ensure  => directory,
-  #  owner   => root,
-  #  group   => root,
-  #  require => Package['sssd'],
-  #}
-
   service { 'oddjobd':
     ensure  => running,
     enable  => true,
@@ -322,7 +315,6 @@ class domain_join (
     enable  => true,
     require => [
       File['/etc/sssd/sssd.conf'],
-      File['/var/log/sssd'],
       Package['sssd'],
     ],
   }
