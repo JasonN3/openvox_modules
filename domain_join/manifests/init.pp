@@ -268,6 +268,9 @@ class domain_join (
             }
           }
         }
+        default: {
+          fail('Unknown OS')
+        }
       }
     }
 

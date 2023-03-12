@@ -21,8 +21,10 @@ class hashicorp_vault::lib_binary {
             mode   => '0444',
           }
         }
+        default: {
+          fail('Unknown OS')
+        }
       }
-      
 
       package { 'vault':
         ensure => present,
