@@ -201,13 +201,6 @@ class domain_join (
     require => Package['sssd'],
   }
 
-  file { '/var/log/sssd/':
-    ensure  => directory,
-    owner   => sssd,
-    group   => sssd,
-    require => Package['sssd'],
-  }
-
   service { 'oddjobd':
     ensure  => running,
     enable  => true,
@@ -238,29 +231,45 @@ class domain_join (
     }
 
     'RedHat': {
-      case $facts['os']['release']['major'] {
-        '7': {
-          $enablesssd = 'authconfig --enablesssd --enablesssdauth --enablemkhomedir --update'
-          package { 'authconfig':
-            ensure => installed,
+      case $facts['os']['name'] {
+        'Fedora': {
+          if Integer($facts['os']['release']['major']) >= 37 {
+            $enablesssd = 'authselect select sssd with-mkhomedir --force'
+            package { 'authconfig':
+              ensure => installed,
+              name   => authselect,
+            }
           }
         }
-        '8': {
-          $enablesssd = 'authselect select sssd with-mkhomedir --force'
-          package { 'authconfig':
-            ensure => installed,
-            name   => authselect,
-          }
-        }
-        '9': {
-          $enablesssd = 'authselect select sssd with-mkhomedir --force'
-          package { 'authconfig':
-            ensure => installed,
-            name   => authselect,
+        'RedHat': {
+          case $facts['os']['release']['major'] {
+            '7': {
+              $enablesssd = 'authconfig --enablesssd --enablesssdauth --enablemkhomedir --update'
+              package { 'authconfig':
+                ensure => installed,
+              }
+            }
+            '8': {
+              $enablesssd = 'authselect select sssd with-mkhomedir --force'
+              package { 'authconfig':
+                ensure => installed,
+                name   => authselect,
+              }
+            }
+            '9': {
+              $enablesssd = 'authselect select sssd with-mkhomedir --force'
+              package { 'authconfig':
+                ensure => installed,
+                name   => authselect,
+              }
+            }
+            default: {
+              err('Unknown OS')
+            }
           }
         }
         default: {
-          err('Unknown OS')
+          fail('Unknown OS')
         }
       }
     }
@@ -309,7 +318,6 @@ class domain_join (
     enable  => true,
     require => [
       File['/etc/sssd/sssd.conf'],
-      File['/var/log/sssd'],
       Package['sssd'],
     ],
   }

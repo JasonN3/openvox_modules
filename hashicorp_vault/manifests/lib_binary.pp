@@ -4,11 +4,26 @@
 class hashicorp_vault::lib_binary {
   case $facts['os']['family'] {
     'RedHat': {
-      file { '/etc/yum.repos.d/vault.repo':
-        source => 'https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo',
-        owner  => root,
-        group  => root,
-        mode   => '0444',
+      case $facts['os']['name'] {
+        'RedHat': {
+          file { '/etc/yum.repos.d/vault.repo':
+            source => 'https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo',
+            owner  => root,
+            group  => root,
+            mode   => '0444',
+          }
+        }
+        'Fedora': {
+          file { '/etc/yum.repos.d/vault.repo':
+            source => 'https://rpm.releases.hashicorp.com/fedora/hashicorp.repo',
+            owner  => root,
+            group  => root,
+            mode   => '0444',
+          }
+        }
+        default: {
+          fail('Unknown OS')
+        }
       }
 
       package { 'vault':
