@@ -201,12 +201,12 @@ class domain_join (
     require => Package['sssd'],
   }
 
-  file { '/var/log/sssd/':
-    ensure  => directory,
-    owner   => sssd,
-    group   => sssd,
-    require => Package['sssd'],
-  }
+  #file { '/var/log/sssd/':
+  #  ensure  => directory,
+  #  owner   => root,
+  #  group   => root,
+  #  require => Package['sssd'],
+  #}
 
   service { 'oddjobd':
     ensure  => running,
