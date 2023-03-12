@@ -240,7 +240,7 @@ class domain_join (
     'RedHat': {
       case $facts['os']['name'] {
         'Fedora': {
-          if $facts['os']['release']['major'] >= 37 {
+          if Integer($facts['os']['release']['major']) >= 37 {
             $enablesssd = 'authselect select sssd with-mkhomedir --force'
             package { 'authconfig':
               ensure => installed,
