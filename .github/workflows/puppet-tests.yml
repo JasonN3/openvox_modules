@@ -17,7 +17,7 @@ jobs:
     name: Run pdk test unit
     runs-on: ubuntu-latest
     container:
-      image: puppet/pdk:latest
+      image: docker.io/puppet/pdk:latest
     permissions:
       contents: read # for checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
@@ -29,6 +29,8 @@ jobs:
 
       - name: Validate code
         run: |
+          apt update
+          apt install -y make gcc
           curr_loc=$(pwd)
           ERC=0
           for module in $(ls -d */)
