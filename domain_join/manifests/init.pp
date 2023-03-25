@@ -241,7 +241,7 @@ class domain_join (
             }
           }
         }
-        'RedHat': {
+        /(RedHat|CentOS)/: {
           case $facts['os']['release']['major'] {
             '7': {
               $enablesssd = 'authconfig --enablesssd --enablesssdauth --enablemkhomedir --update'
@@ -249,14 +249,7 @@ class domain_join (
                 ensure => installed,
               }
             }
-            '8': {
-              $enablesssd = 'authselect select sssd with-mkhomedir --force'
-              package { 'authconfig':
-                ensure => installed,
-                name   => authselect,
-              }
-            }
-            '9': {
+            /(8|9)/: {
               $enablesssd = 'authselect select sssd with-mkhomedir --force'
               package { 'authconfig':
                 ensure => installed,

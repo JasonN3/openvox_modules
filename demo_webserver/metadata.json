@@ -1,44 +1,44 @@
 {
-    "name": "JasonN3-demo_webserver",
-    "version": "0.1.0",
-    "author": "Jason Nagin",
-    "summary": "This module is for DEMO purposes only. It will install a web server that will NOT start with the machine.",
-    "license": "Apache-2.0",
-    "source": "https://github.com/JasonN3/puppet_modules/tree/main/demo_webserver",
-    "dependencies": [
-    ],
-    "operatingsystem_support": [
-      {
-        "operatingsystem": "CentOS",
-        "operatingsystemrelease": [
-          "7",
-          "8",
-          "9"
-        ]
-      },
-      {
-        "operatingsystem": "RedHat",
-        "operatingsystemrelease": [
-          "7",
-          "8",
-          "9"
-        ]
-      },
-      {
-        "operatingsystem": "Ubuntu",
-        "operatingsystemrelease": [
-          "18.04"
-        ]
-      }
-    ],
-    "requirements": [
-      {
-        "name": "puppet",
-        "version_requirement": ">= 6.21.0 < 8.0.0"
-      }
-    ],
-    "pdk-version": "2.5.0",
-    "template-url": "pdk-default#2.5.0",
-    "template-ref": "tags/2.5.0-0-g369d483"
-  }
-  
+  "name": "JasonN3-demo_webserver",
+  "version": "0.1.0",
+  "author": "Jason Nagin",
+  "summary": "This module is for DEMO purposes only. It will install a web server that will NOT start with the machine.",
+  "license": "Apache-2.0",
+  "source": "https://github.com/JasonN3/puppet_modules/tree/main/demo_webserver",
+  "dependencies": [
+
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "18.04"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 6.21.0 < 8.0.0"
+    }
+  ],
+  "pdk-version": "2.7.0",
+  "template-url": "pdk-default#2.5.0",
+  "template-ref": "tags/2.5.0-0-g369d483"
+}

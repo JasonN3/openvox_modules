@@ -1,4 +1,4 @@
-name: puppet-lint
+name: puppet-unit-tests
 
 on:
   pull_request:
@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 jobs:
-  puppet-lint:
+  puppet-tests:
     if: github.event.pull_request.draft == false
-    name: Run pdk validate
+    name: Run pdk test unit
     runs-on: ubuntu-latest
     container:
       image: docker.io/puppet/pdk:latest
@@ -36,7 +36,7 @@ jobs:
           for module in $(ls -d */)
           do
             cd ${curr_loc}/${module}
-            pdk validate
+            pdk test unit
             RC=$?
             if [[ $RC -ne 0 ]]
             then
