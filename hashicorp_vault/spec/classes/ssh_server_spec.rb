@@ -7,9 +7,9 @@ describe 'hashicorp_vault::ssh_server' do
     ['vault_public_key', 'vault_ssh_engine'].each do |key_source|
       context "on #{os}" do
         let(:facts) { os_facts }
-        let(:params) {
+        let(:params) { # rubocop:disable Style/BlockDelimiters
           {
-            'vault_server' => "https://vault.example.com",
+            'vault_server' => 'https://vault.example.com',
             key_source => 'example key'
           }
         }

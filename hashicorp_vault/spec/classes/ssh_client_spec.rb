@@ -6,9 +6,9 @@ describe 'hashicorp_vault::ssh_client' do
   on_supported_os.each do |os, os_facts|
     context "on #{os}" do
       let(:facts) { os_facts }
-      let(:params) {
+      let(:params) { # rubocop:disable Style/BlockDelimiters
         {
-          'vault_server' => "https://vault.example.com",
+          'vault_server' => 'https://vault.example.com',
           'auth_method' => 'ldap'
         }
       }
