@@ -5,7 +5,7 @@ class hashicorp_vault::lib_binary {
   case $facts['os']['family'] {
     'RedHat': {
       case $facts['os']['name'] {
-        'RedHat': {
+        /RedHat|CentOS/: {
           file { '/etc/yum.repos.d/vault.repo':
             source => 'https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo',
             owner  => root,
