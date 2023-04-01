@@ -16,6 +16,8 @@ jobs:
     if: github.event.pull_request.draft == false
     name: Verify README.md is up to date
     runs-on: ubuntu-latest
+    container:
+      image: puppet/puppet-dev-tools:4.x
     permissions:
       contents: read # for checkout to fetch code
 
