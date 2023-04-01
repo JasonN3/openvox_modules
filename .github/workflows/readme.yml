@@ -34,6 +34,7 @@ jobs:
             mv ${module}/README.md ${module}/README.md.orig
           done
           ./gen_readme.sh
+          cd $curr_loc
           for module in $(ls -d */) .
           do
             diff ${module}/README.md{,.orig}
