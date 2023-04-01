@@ -37,7 +37,7 @@ jobs:
           cd $curr_loc
           for module in $(ls -d */) .
           do
-            diff ${module}/README.md{,.orig}
+            diff ${module}/README.md ${module}/README.md.orig
             RC=$?
             if [[ $RC != 0 ]]
             then
