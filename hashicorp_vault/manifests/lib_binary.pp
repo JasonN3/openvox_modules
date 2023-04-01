@@ -1,5 +1,6 @@
 # Library class that will install vault
-# This class should not be directly called
+# @summary This class should not be directly called
+# @api private
 #
 class hashicorp_vault::lib_binary {
   case $facts['os']['family'] {

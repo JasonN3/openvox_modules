@@ -16,6 +16,8 @@ jobs:
     if: github.event.pull_request.draft == false
     name: Verify README.md is up to date
     runs-on: ubuntu-latest
+    container:
+      image: puppet/puppet-dev-tools:4.x
     permissions:
       contents: read # for checkout to fetch code
 
@@ -32,9 +34,10 @@ jobs:
             mv ${module}/README.md ${module}/README.md.orig
           done
           ./gen_readme.sh
+          cd $curr_loc
           for module in $(ls -d */) .
           do
-            diff ${module}/README.md{,.orig}
+            diff ${module}/README.md ${module}/README.md.orig
             RC=$?
             if [[ $RC != 0 ]]
             then
