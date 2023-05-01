@@ -72,7 +72,12 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
 
     If you would like to enable LDAPS (recommended), add the CA chain to the trust anchors and then add `ad_use_ldaps = true` under the domain section
 
-3) Configure KRB5
+3) Set the permissions for `/etc/sssd/sssd.conf`
+    ```bash
+    chmod 400 /etc/sssd/sssd.conf
+    ```
+
+4) Configure KRB5
 
     Edit `/etc/krb5.conf` and match the following lines
     ```ini
@@ -99,7 +104,7 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
     `*DOMAIN*` is the FQDN of your domain in ALL CAPITALS. Authentication issues will occur if you do not use all capitals.
     You do not need to specify anything under `realms` or `domain_realm`. SSSD will automatically discover that information from DNS.
 
-4) Configure SUDO access
+5) Configure SUDO access
 
     Create a file in /etc/sudoers.d using `visudo -f /etc/sudoers.d/DOMAIN` and specify the default sudo access for members of the AD `SUDO` groups.  
     **Make sure to escape any spaces with a `\`**  
@@ -112,13 +117,13 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
 
     Any other sudo access you would like to grant to AD groups can be defined the same way in separate files or in the same file
 
-5) Ensure the machine's hostname is set to the FQDN. The machine hostname cannot be the shortname
+6) Ensure the machine's hostname is set to the FQDN. The machine hostname cannot be the shortname
 
     ```bash
     hostnamectl set-hostname $(hostname -f)
     ```
 
-6) Join the machine with one of the following commands
+7) Join the machine with one of the following commands
     - Join with OS information. The OS information is only set during joining.
       ```bash
       source /etc/os-release
@@ -131,13 +136,13 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
       ```
       `*join_user*` is the AD account that will be used to join the machine to the domain. The password that adcli prompts for will not be stored anywhere
 
-7) Enable and start SSSD
+8) Enable and start SSSD and oddjobd
     ```bash
-    systemctl enable sssd
-    systemctl restart sssd
+    systemctl enable sssd oddjobd
+    systemctl restart sssd oddjobd
     ```
 
-8) Enable logging in with AD
+9) Enable logging in with AD
     ```bash
     authselect select sssd with-mkhomedir --force
     ```
