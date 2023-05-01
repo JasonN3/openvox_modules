@@ -104,8 +104,8 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
     Create a file in /etc/sudoers.d using `visudo -f /etc/sudoers.d/DOMAIN` and specify the default sudo access for members of the AD `SUDO` groups.  
     **Make sure to escape any spaces with a `\`**  
     ```sudo
-      %*Global_SUDO_Access*   ALL=(ALL) ALL
-      %*Machine_SUDO_Access*  ALL=(ALL) ALL
+    %*Global_SUDO_Access*   ALL=(ALL) ALL
+    %*Machine_SUDO_Access*  ALL=(ALL) ALL
     ```
     `*Global_SUDO_Access*` and `*Machine_SUDO_Access*` are the AD groups you created above for RBAC
     The `%` before the group name indicates that it is a group
