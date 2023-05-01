@@ -5,7 +5,7 @@
 For a description of RBAC, please check out DNSStuff's description of [what is RBAC](https://www.dnsstuff.com/rbac-vs-abac-access-control#what-is-rbac)
 
 ### Access to specific machines
-- For each machine create two groups. Both groups will include the short name of the machine. One of the groups will be for machine specific `SSH` access and the other will be machine specific `SUDO` access  
+- For each machine create two groups. Both groups will include the short name of the machine. One of the groups will be for machine specific `SSH` access (Referred to as `Machine_SSH_Access` for the rest of the doc) and the other will be machine specific `SUDO` access (Referred to as `Machine_SUDO_Access` for the rest of the doc)  
   Example:
   ```
   *DOMAIN* Linux *hostname* ssh access
@@ -15,7 +15,7 @@ For a description of RBAC, please check out DNSStuff's description of [what is R
   `*DOMAIN*` is your domain's short name (optional)
 
 ### Access to all machines
-- Create two groups for global machine access. One of the groups will be for `SSH` access to all machines and the other will be for `SUDO` access to all machines  
+- Create two groups for global machine access. One of the groups will be for `SSH` access (Referred to as `Global_SSH_Access` for the rest of the doc) to all machines and the other will be for `SUDO` access (Referred to as `Global_SSH_Access` for the rest of the doc) to all machines  
   Example:
   ```
   *DOMAIN* Linux ssh access
@@ -66,8 +66,8 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
     config_file_version = 2
     domains = *DOMAIN*
     ```
-    `*DOMAIN*` is the FQDN of your domain in ALL CAPITALS. Authentication issues will occur if you do not use all capitals.
-    `ldap_idmap_range_size` is optional. This is necessary if you have a large AD environment. Changing this value will cause the uid hash to change so make sure not to change it once the machine is domain joined. 
+    `*DOMAIN*` is the FQDN of your domain in ALL CAPITALS. Authentication issues will occur if you do not use all capitals.  
+    `ldap_idmap_range_size` is optional. This is necessary if you have a large AD environment. Changing this value will cause the uid hash to change so make sure not to change it once the machine is domain joined.  
     `*Global_SSH_Access*`, `*Global_SUDO_Access*`, `*Machine_SSH_Access*`, and `*Machine_SUDO_Access*` are the AD groups you created above for RBAC
 
     If you would like to enable LDAPS (recommended), add the CA chain to the trust anchors and then add `ad_use_ldaps = true` under the domain section
