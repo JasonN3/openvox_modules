@@ -1,6 +1,9 @@
 # Joining RHEL machines directly to Microsoft AD
 
 ## Configuring your AD groups for RBAC (Role Based Access Control)
+
+For a description of RBAC, please check out DNSStuff's description of [what is RBAC](https://www.dnsstuff.com/rbac-vs-abac-access-control#what-is-rbac)
+
 ### Access to specific machines
 - For each machine create two groups. Both groups will include the short name of the machine. One of the groups will be for machine specific `SSH` access and the other will be machine specific `SUDO` access  
   Example:
