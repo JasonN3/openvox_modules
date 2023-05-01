@@ -131,7 +131,13 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
       ```
       `*join_user*` is the AD account that will be used to join the machine to the domain. The password that adcli prompts for will not be stored anywhere
 
-7) Enable logging in with AD
+7) Enable and start SSSD
+    ```bash
+    systemctl enable sssd
+    systemctl restart sssd
+    ```
+
+8) Enable logging in with AD
     ```bash
     authselect select sssd with-mkhomedir --force
     ```
