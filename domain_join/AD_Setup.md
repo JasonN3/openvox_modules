@@ -1,19 +1,19 @@
 # Joining RHEL or any other Linux machine directly to Microsoft Active Directory
 
-Managing access to Linux systems is always a challenge. I've seen some people create all of their user's on all of their machines, others that will share accounts either through SSH keys or passwords, and others that will use LDAP binding (sometimes using the existing AD infrastructure and sometimes using a separate domain) that required them to write LDAP queries to filter access. All of these methods make managing access to machines difficult, require the administrators to be informed when someone is joing or leaves a team, and sometimes makes logging useless (shared accounts). I'm sure I'm also not alone in having a bad experience with HR informing the technical teams when there is a change to teams. However, there's a way I've found that works well and integrates with what is typically a pre-existing process. 
+Managing access to Linux systems is always a challenge. I've seen some people create all of their user's on all of their machines, others that will share accounts either through SSH keys or passwords, and others that will use LDAP binding (sometimes using the existing AD infrastructure and sometimes using a separate domain) that required them to write LDAP queries to filter access. All of these methods make managing access to machines difficult, require the administrators to be informed when someone is joining or leaves a team, and sometimes makes logging useless (shared accounts). I'm sure I'm also not alone in having a bad experience with HR informing the technical teams when there is a change to teams. However, there's a way I've found that works well and integrates with what is typically a pre-existing process. 
 
-Most companies I have come accross have some form of ERP system that will automatically create/disable/delete user account in Microsoft Active Directory (MS AD), so let's take advantage of the work that others are doing. [SSSD](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_authentication_and_authorization_in_rhel/understanding-sssd-and-its-benefits_configuring-authentication-and-authorization-in-rhel) can connect directly to MS AD. If you've ever setup an authentication server for Linux that had a trust to AD, you've had SSSD talk to your AD servers. If you look at [how a trust works](https://learn.microsoft.com/en-us/azure/active-directory-domain-services/concepts-forest-trust#kerberos-based-processing-of-authentication-requests-over-forest-trusts), the authentication server you setup would have returned a referral back to the MS AD servers causing SSSD to query your AD servers directly. The following setup skips the need for the extra authentication server and configures SSSD to go directly to AD first.
+Most companies I have come across have some form of ERP system that will automatically create/disable/delete user accounts in Microsoft Active Directory (MS AD), so let's take advantage of the work that others are doing. [SSSD](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_authentication_and_authorization_in_rhel/understanding-sssd-and-its-benefits_configuring-authentication-and-authorization-in-rhel) can connect directly to MS AD. If you've ever set up an authentication server for Linux that had a trust to AD, you've had SSSD talk to your AD servers. If you look at [how a trust works](https://learn.microsoft.com/en-us/azure/active-directory-domain-services/concepts-forest-trust#kerberos-based-processing-of-authentication-requests-over-forest-trusts), the authentication server you setup would have returned a referral back to the MS AD servers causing SSSD to query your AD servers directly. The following setup skips the need for the extra authentication server and configures SSSD to go directly to AD first.
 
-The next question is typically how to control access. This is where RBAC comes in. RBAC gives you the ability to stop assigning access to users and start assigning access to roles. For a description of RBAC, please check out DNSStuff's description of [what is RBAC](https://www.dnsstuff.com/rbac-vs-abac-access-control#what-is-rbac). Once you have the groups layed out, a new team member can automatically be assigned to a team, which will already be a part of role, which will already have the appropriate access to a group of servers. It removes the "I just got hired and need the same access as X" requests that reference a person that left months ago and has had all of their access purged. Instead, once they are added to their team's group, they'll have the access they need. It also removes the discoveries that someone that left the company over a year ago still has access to all of the servers because nobody told the administrators that that person left the company. When the ERP system automatically updates their AD account, they'll lose all access.
+The next question is typically how to control access. This is where RBAC comes in. RBAC gives you the ability to stop assigning access to users and start assigning access to roles. For a description of RBAC, please check out DNSStuff's article on [what is RBAC](https://www.dnsstuff.com/rbac-vs-abac-access-control#what-is-rbac). Once you have the groups laid out, a new team member can automatically be assigned to a team, which will already be a part of the role, which will already have the appropriate access to a group of servers. It removes the "I just got hired and need the same access as X" requests that reference a person that left months ago and has had all of their access purged. Instead, once they are added to their team's group, they'll have the access they need. It also removes the discoveries that someone that left the company over a year ago still has access to all of the servers because nobody told the administrators that that person left the company. When the ERP system automatically updates their AD account, they'll lose all access.
 
 ## Configuring your AD groups for RBAC (Role Based Access Control)
-Your company's naming scheme may differ from the examples below. The name of the groups are not important. The important part is the intended use of each group.  
-Because SSSD is not synchronizing the AD groups and instead is just getting a list of groups the user is a part of as part of the login process, missing groups will not prevent this setup from working. However, if you have multiple teams with delegated permissions, it is recommended to at least create all of the groups to prevent them from being created in the wrong OU and giving the wrong team control over the access.
+Your company's naming scheme may differ from the examples below. The name of the groups are not important. The important part is the intended use of each group.
+Because SSSD is not synchronizing the AD groups and instead is just getting a list of groups the user is a part of as part of the login process, missing groups will not prevent this setup from working. However, if you have multiple teams with delegated permissions, it is recommended to at least create all of the groups to prevent them from being created in the wrong OU and giving the wrong team control over the access
 
 ### Access to specific machines
 - For each machine create two groups. Both groups will include the short name of the machine.  
-  One of the groups will be for machine specific `SSH` access (Referred to as `Machine_SSH_Access` for the rest of the doc).  
-  The other will be machine specific `SUDO` access (Referred to as `Machine_SUDO_Access` for the rest of the doc).  
+  One of the groups will be for machine specific `SSH` access (Referred to as `*Machine_SSH_Access*` for the rest of the doc).  
+  The other will be machine specific `SUDO` access (Referred to as `*Machine_SUDO_Access*` for the rest of the doc).  
 
   Example:
   ```
@@ -25,8 +25,8 @@ Because SSSD is not synchronizing the AD groups and instead is just getting a li
 
 ### Access to all machines
 - Create two groups for global machine access.  
-  One of the groups will be for `SSH` access (Referred to as `Global_SSH_Access` for the rest of the doc) to all machines.  
-  The other will be for `SUDO` access (Referred to as `Global_SSH_Access` for the rest of the doc) to all machines.  
+  One of the groups will be for `SSH` access (Referred to as `*Global_SSH_Access*` for the rest of the doc) to all machines.  
+  The other will be for `SUDO` access (Referred to as `*Global_SSH_Access*` for the rest of the doc) to all machines.  
 
   Example:
   ```
@@ -39,13 +39,13 @@ Because SSSD is not synchronizing the AD groups and instead is just getting a li
 Nesting within the AD groups is allowed. If you would like to create a group that has access to multiple machines, you do not need to change the configuration on the RHEL machine. Instead you can make the new group a member of the access group for the specific machines. This will allow you to control the access directly from AD.
 
 Example nesting:
-- CONOSCO Linux Webserver1 ssh access
-  - CONOSCO Linux Webservers ssh access
-    - CONOSCO Web Developers
+- CONTOSO Linux Webserver1 ssh access
+  - CONTOSO Linux Webservers ssh access
+    - CONTOSO Web Developers
       - User1
       - User2
 
-This nesting will allow you to assign roles (CONOSCO Web Developers) to groups of machines (CONOSCO Linux Webservers ssh access) instead of users to specific machines.
+This nesting will allow you to assign roles (CONTOSO Web Developers) to groups of machines (CONTOSO Linux Webservers ssh access) instead of users to specific machines.
 
 ## Domain Joining your Linux machine
 1) Install required packages
@@ -121,6 +121,7 @@ This nesting will allow you to assign roles (CONOSCO Web Developers) to groups o
 
     Create a file in /etc/sudoers.d using `visudo -f /etc/sudoers.d/DOMAIN` and specify the default sudo access for members of the AD `SUDO` groups. The file name can be anything you want and does not have to be named `DOMAIN`.  
     **Make sure to escape any spaces with a `\`**  
+      Example: `Linux sudo access` becomes `Linux\ sudo\ access`  
     ```sudo
     %*Global_SUDO_Access*   ALL=(ALL) ALL
     %*Machine_SUDO_Access*  ALL=(ALL) ALL
@@ -164,7 +165,7 @@ As long as your account is a member of one of the groups that were created, you 
 
 ## Keeping the OS information up to date
 
-By default, the computer object will not have enough permissions to update its own OS information. Make sure to go in to ADUAC (Active Directory Users and Computers) and grant `SELF` the ability to write each of the OS fields. Once added, the following commands can be used to update the AD object with the latest OS information
+By default, the computer object will not have enough permissions to update its own OS information. Make sure to go in to ADUAC (Active Directory Users and Computers) and grant `SELF` the ability to write each of the OS fields on the computer objects (this can be done at the OU level). Once added, the following commands can be used to update the AD object with the latest OS information
 
 ```bash
 source /etc/os-release; /usr/sbin/adcli update --os-name="${NAME}" --os-version="${VERSION}" --os-service-pack="${VERSION_ID}"
