@@ -261,7 +261,7 @@ class domain_join (
             }
           }
         }
-        /(RedHat|CentOS)/: {
+        /(RedHat|CentOS|Rocky)/: {
           case $facts['os']['release']['major'] {
             '7': {
               $enablesssd = 'authconfig --enablesssd --enablesssdauth --enablemkhomedir --update'
