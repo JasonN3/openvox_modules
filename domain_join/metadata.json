@@ -13,6 +13,12 @@
   ],
   "operatingsystem_support": [
     {
+      "operatingsystem": "Rocky",
+      "operatingsystemrelease": [
+        "9"
+      ]
+    },
+    {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
         "7",
