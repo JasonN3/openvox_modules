@@ -88,9 +88,9 @@ class domain_join (
   # lint:endignore
 
   if $domain_short {
-    $shortdomain = split($currdomain, '[.]')[0]
-  } else {
     $shortdomain = $domain_short
+  } else {
+    $shortdomain = split($currdomain, '[.]')[0]
   }
 
   if $configure_chrony {
