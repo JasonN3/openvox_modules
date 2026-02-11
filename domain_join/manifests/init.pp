@@ -168,8 +168,8 @@ class domain_join (
   }
   if $oidc {
     package { 'sssd':
-      name   => 'sssd-idp',
       ensure => installed,
+      name   => 'sssd-idp',
     }
   } else {
     package { 'sssd':
@@ -261,7 +261,7 @@ class domain_join (
     owner   => root,
     group   => root,
     mode    => '0400',
-    notify  => Service['sssd'],
+    notify  => [ Service['sssd'], Exec['Enable SSSD Authentication'] ]
     require => Package['sssd'],
   }
 
@@ -336,7 +336,9 @@ class domain_join (
     }
   }
 
-  unless $oidc {
+  if $oidc {
+    $enable_smartcard = ''
+  } else {
     case $smartcard {
       'disabled': {
         $enable_smartcard = ''
@@ -354,8 +356,6 @@ class domain_join (
         err('How??')
       }
     }
-  } else {
-    $enable_smartcard = ''
   }
 
   exec { 'Enable SSSD Authentication':
