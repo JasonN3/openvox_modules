@@ -261,7 +261,7 @@ class domain_join (
     owner   => root,
     group   => root,
     mode    => '0400',
-    notify  => [ Service['sssd'], Exec['Enable SSSD Authentication'] ]
+    notify  => [ Service['sssd'], Exec['Enable SSSD Authentication'] ],
     require => Package['sssd'],
   }
 
