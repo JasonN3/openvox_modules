@@ -208,15 +208,21 @@ Data type: `Optional[String]`
 
 Client ID for OIDC authentication
 
+Default value: ``undef``
+
 ##### <a name="client_secret"></a>`client_secret`
 
 Data type: `Optional[String]`
 
 Optional secret for client
 
+Default value: ``undef``
+
 ##### <a name="tenant_id"></a>`tenant_id`
 
 Data type: `Optional[String]`
 
 Tenant ID for Entra ID authentication
+
+Default value: ``undef``
 
