@@ -218,7 +218,10 @@ class domain_join (
     exec { 'Join':
       command => $command,
       path    => $facts['path'],
-      notify  => Service['sssd'],
+      notify  => [
+        Service['sssd'],
+        Exec['Enable SSSD Authentication']
+      ],
       creates => '/etc/krb5.keytab',
       require => [
         Package['adcli'],
@@ -360,9 +363,6 @@ class domain_join (
 
   exec { 'Enable SSSD Authentication':
     command     => "${enablesssd} ${enable_smartcard}",
-    subscribe   => [
-      Exec['Join'],
-    ],
     path        => $facts['path'],
     refreshonly => true,
     require     => [
