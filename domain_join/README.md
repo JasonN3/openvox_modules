@@ -50,11 +50,15 @@ Data type: `Optional[String]`
 
 The username used to domain join
 
+Default value: ``undef``
+
 ##### <a name="sensitive_password"></a>`sensitive_password`
 
 Data type: `Optional[Sensitive[String]]`
 
 The password used to domain join
+
+Default value: ``undef``
 
 ##### <a name="global_admins"></a>`global_admins`
 
@@ -212,7 +216,7 @@ Default value: ``undef``
 
 ##### <a name="client_secret"></a>`client_secret`
 
-Data type: `Optional[String]`
+Data type: `Optional[Sensitive[String]]`
 
 Optional secret for client
 

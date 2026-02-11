@@ -52,8 +52,8 @@
 # @param tenant_id
 #   Tenant ID for Entra ID authentication
 class domain_join (
-  Optional[String]                                           $username,
-  Optional[Sensitive[String]]                                $sensitive_password,
+  Optional[String]                                           $username             = undef,
+  Optional[Sensitive[String]]                                $sensitive_password   = undef,
   String                                                     $global_admins,
   String                                                     $global_ssh,
   String                                                     $local_admins,
@@ -74,7 +74,7 @@ class domain_join (
   Boolean                                                    $enable_smartcard_ssh = false,
   Boolean                                                    $oidc                 = false,
   Optional[String]                                           $client_id            = undef,
-  Optional[String]                                           $client_secret        = undef,
+  Optional[Sensitive[String]]                                $client_secret        = undef,
   Optional[String]                                           $tenant_id            = undef
 ) {
   if $override_domain {
@@ -153,7 +153,7 @@ class domain_join (
   }
   if $oidc {
     package { 'sssd':
-      name   => 'sssd-oidc',
+      name   => 'sssd-idp',
       ensure => installed,
     }
   } else {
