@@ -52,43 +52,30 @@
 # @param tenant_id
 #   Tenant ID for Entra ID authentication
 class domain_join (
-  Variant[{
-    String                                                     $username,
-    Sensitive[String]                                          $sensitive_password,
-    String                                                     $global_admins,
-    String                                                     $global_ssh,
-    String                                                     $local_admins,
-    String                                                     $local_ssh,
-    Boolean                                                    $global_nopasswd      = false,
-    Boolean                                                    $local_nopasswd       = false,
-    String                                                     $sssd_home            = '/home',
-    Optional[String]                                           $override_domain      = undef,
-    Optional[String]                                           $domain_short         = undef,
-    Optional[String]                                           $dns_subdomain        = undef,
-    Boolean                                                    $dnsupdate            = true,
-    Optional[String]                                           $file_header          = undef,
-    Array                                                      $time_servers         = [],
-    Boolean                                                    $configure_chrony     = true,
-    Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard            = 'disabled',
-    Optional[Array[String]]                                    $ad_trust             = undef,
-    Boolean                                                    $update_os_info       = false,
-    Boolean                                                    $enable_smartcard_ssh = false,
-    Enum[false]                                                $oidc                 = false
-  },
-  {
-    Enum[true]       $oidc            = false,
-    String           $client_id,
-    Optional[String] $client_secret,
-    String           $tenant_id,
-    Optional[String] $override_domain  = undef,
-    Optional[String] $file_header      = undef,
-    Boolean          $configure_chrony = true,
-    Optional[String] $domain_short     = undef,
-    Array            $time_servers     = [],
-  }]
-  
-  
-
+  Optional[String]                                           $username,
+  Optional[Sensitive[String]]                                $sensitive_password,
+  String                                                     $global_admins,
+  String                                                     $global_ssh,
+  String                                                     $local_admins,
+  String                                                     $local_ssh,
+  Boolean                                                    $global_nopasswd      = false,
+  Boolean                                                    $local_nopasswd       = false,
+  String                                                     $sssd_home            = '/home',
+  Optional[String]                                           $override_domain      = undef,
+  Optional[String]                                           $domain_short         = undef,
+  Optional[String]                                           $dns_subdomain        = undef,
+  Boolean                                                    $dnsupdate            = true,
+  Optional[String]                                           $file_header          = undef,
+  Array                                                      $time_servers         = [],
+  Boolean                                                    $configure_chrony     = true,
+  Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard            = 'disabled',
+  Optional[Array[String]]                                    $ad_trust             = undef,
+  Boolean                                                    $update_os_info       = false,
+  Boolean                                                    $enable_smartcard_ssh = false,
+  Boolean                                                    $oidc                 = false,
+  Optional[String]                                           $client_id,
+  Optional[String]                                           $client_secret,
+  Optional[String]                                           $tenant_id
 ) {
   if $override_domain {
     $currdomain = $override_domain

@@ -39,16 +39,20 @@ The following parameters are available in the `domain_join` class:
 * [`ad_trust`](#ad_trust)
 * [`update_os_info`](#update_os_info)
 * [`enable_smartcard_ssh`](#enable_smartcard_ssh)
+* [`oidc`](#oidc)
+* [`client_id`](#client_id)
+* [`client_secret`](#client_secret)
+* [`tenant_id`](#tenant_id)
 
 ##### <a name="username"></a>`username`
 
-Data type: `String`
+Data type: `Optional[String]`
 
 The username used to domain join
 
 ##### <a name="sensitive_password"></a>`sensitive_password`
 
-Data type: `Sensitive[String]`
+Data type: `Optional[Sensitive[String]]`
 
 The password used to domain join
 
@@ -189,4 +193,30 @@ Data type: `Boolean`
 Enable smartcard authentication for SSH (Only seems to work on RHEL 8+)
 
 Default value: ``false``
+
+##### <a name="oidc"></a>`oidc`
+
+Data type: `Boolean`
+
+Use OIDC for authentication
+
+Default value: ``false``
+
+##### <a name="client_id"></a>`client_id`
+
+Data type: `Optional[String]`
+
+Client ID for OIDC authentication
+
+##### <a name="client_secret"></a>`client_secret`
+
+Data type: `Optional[String]`
+
+Optional secret for client
+
+##### <a name="tenant_id"></a>`tenant_id`
+
+Data type: `Optional[String]`
+
+Tenant ID for Entra ID authentication
 
