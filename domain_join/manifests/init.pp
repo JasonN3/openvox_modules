@@ -43,9 +43,17 @@
 #   Configures a service to update the OS information on the AD object on startup
 # @param enable_smartcard_ssh
 #   Enable smartcard authentication for SSH (Only seems to work on RHEL 8+)
+# @param oidc
+#   Use OIDC for authentication
+# @param client_id
+#   Client ID for OIDC authentication
+# @param client_secret
+#   Optional secret for client
+# @param tenant_id
+#   Tenant ID for Entra ID authentication
 class domain_join (
-  String                                                     $username,
-  Sensitive[String]                                          $sensitive_password,
+  Optional[String]                                           $username             = undef,
+  Optional[Sensitive[String]]                                $sensitive_password   = undef,
   String                                                     $global_admins,
   String                                                     $global_ssh,
   String                                                     $local_admins,
@@ -63,8 +71,27 @@ class domain_join (
   Enum['disabled', 'enabled', 'required', 'lock-on-removal'] $smartcard            = 'disabled',
   Optional[Array[String]]                                    $ad_trust             = undef,
   Boolean                                                    $update_os_info       = false,
-  Boolean                                                    $enable_smartcard_ssh = false
+  Boolean                                                    $enable_smartcard_ssh = false,
+  Boolean                                                    $oidc                 = false,
+  Optional[String]                                           $client_id            = undef,
+  Optional[Sensitive[String]]                                $client_secret        = undef,
+  Optional[String]                                           $tenant_id            = undef
 ) {
+  if $oidc {
+    if !$client_id {
+      fail('domain_join: client_id must be provided when oidc is enabled')
+    }
+    if !$tenant_id {
+      fail('domain_join: tenant_id must be provided when oidc is enabled')
+    }
+  } else {
+    if !$username {
+      fail('domain_join: username must be provided when oidc is disabled')
+    }
+    if !$sensitive_password {
+      fail('domain_join: sensitive_password must be provided when oidc is disabled')
+    }
+  }
   if $override_domain {
     $currdomain = $override_domain
     # This is only used if $override_domain is defined
@@ -83,7 +110,7 @@ class domain_join (
   } elsif $::file_header {
     $file_header_local = $::file_header
   } else {
-    $file_header_local = 'This file is being maintained by Puppet. Do not edit.'
+    $file_header_local = 'This file is being maintained by OpenVox. Do not edit.'
   }
   # lint:endignore
 
@@ -139,8 +166,15 @@ class domain_join (
   package { 'samba-common':
     ensure => installed,
   }
-  package { 'sssd':
-    ensure => installed,
+  if $oidc {
+    package { 'sssd':
+      ensure => installed,
+      name   => 'sssd-idp',
+    }
+  } else {
+    package { 'sssd':
+      ensure => installed,
+    }
   }
 
   if $ad_trust != undef {
@@ -167,41 +201,46 @@ class domain_join (
     }
   }
 
-  if($override_domain) {
-    # lint:ignore:140chars
-    $command = Sensitive("bash -c 'source /etc/os-release; echo -n \"${$sensitive_password.unwrap}\" | adcli join -H ${forced_fqdn} -D ${currdomain} -U \"${username}\" --stdin-password --os-name=\"\${NAME}\" --os-version=\"\${VERSION}\" --os-service-pack=\"\${VERSION_ID}\"'")
-    # lint:endignore
-  } else {
-    # lint:ignore:140chars
-    $command = Sensitive("bash -c 'source /etc/os-release; echo -n \"${$sensitive_password.unwrap}\" | adcli join -D ${currdomain} -U \"${username}\" --stdin-password --os-name=\"\${NAME}\" --os-version=\"\${VERSION}\" --os-service-pack=\"\${VERSION_ID}\"'")
-    # lint:endignore
-  }
+  unless $oidc {
+    if($override_domain) {
+      # lint:ignore:140chars
+      $command = Sensitive("bash -c 'source /etc/os-release; echo -n \"${$sensitive_password.unwrap}\" | adcli join -H ${forced_fqdn} -D ${currdomain} -U \"${username}\" --stdin-password --os-name=\"\${NAME}\" --os-version=\"\${VERSION}\" --os-service-pack=\"\${VERSION_ID}\"'")
+      # lint:endignore
+    } else {
+      # lint:ignore:140chars
+      $command = Sensitive("bash -c 'source /etc/os-release; echo -n \"${$sensitive_password.unwrap}\" | adcli join -D ${currdomain} -U \"${username}\" --stdin-password --os-name=\"\${NAME}\" --os-version=\"\${VERSION}\" --os-service-pack=\"\${VERSION_ID}\"'")
+      # lint:endignore
+    }
 
-  exec { 'Join':
-    command => $command,
-    path    => $facts['path'],
-    notify  => Service['sssd'],
-    creates => '/etc/krb5.keytab',
-    require => [
-      Package['adcli'],
-      Package['krb5-workstation'],
-      Package['samba-common'],
-      Package['samba-common-tools'],
-      Package['sssd'],
-      File['/etc/krb5.conf'],
-      File['/etc/sssd/sssd.conf'],
-    ],
-  }
+    exec { 'Join':
+      command => $command,
+      path    => $facts['path'],
+      notify  => [
+        Service['sssd'],
+        Exec['Enable SSSD Authentication']
+      ],
+      creates => '/etc/krb5.keytab',
+      require => [
+        Package['adcli'],
+        Package['krb5-workstation'],
+        Package['samba-common'],
+        Package['samba-common-tools'],
+        Package['sssd'],
+        File['/etc/krb5.conf'],
+        File['/etc/sssd/sssd.conf'],
+      ],
+    }
 
-  file { '/etc/systemd/system/update_adcli.service':
-    ensure  => file,
-    content => template('domain_join/update_adcli.service.erb'),
-    require => Exec['Join'],
-    notify  => Service['update_adcli'],
-  }
+    file { '/etc/systemd/system/update_adcli.service':
+      ensure  => file,
+      content => template('domain_join/update_adcli.service.erb'),
+      require => Exec['Join'],
+      notify  => Service['update_adcli'],
+    }
 
-  service { 'update_adcli':
-    enable => true,
+    service { 'update_adcli':
+      enable => true,
+    }
   }
 
   file { '/etc/krb5.conf':
@@ -210,14 +249,22 @@ class domain_join (
     notify  => Service['sssd'],
     require => Package['krb5-workstation'],
   }
+  if $oidc {
+    $sssd_src = 'domain_join/sssd.oidc.conf.erb'
+  } else {
+    $sssd_src = 'domain_join/sssd.conf.erb'
+  }
 
   file { '/etc/sssd/sssd.conf':
     ensure  => file,
-    content => template('domain_join/sssd.conf.erb'),
+    content => template($sssd_src),
     owner   => root,
     group   => root,
     mode    => '0400',
-    notify  => Service['sssd'],
+    notify  => [
+      Service['sssd'],
+      Exec['Enable SSSD Authentication']
+    ],
     require => Package['sssd'],
   }
 
@@ -292,29 +339,30 @@ class domain_join (
     }
   }
 
-  case $smartcard {
-    'disabled': {
-      $enable_smartcard = ''
-    }
-    'enabled': {
-      $enable_smartcard = 'with-smartcard'
-    }
-    'required': {
-      $enable_smartcard = 'with-smartcard-required'
-    }
-    'lock-on-removal': {
-      $enable_smartcard = 'with-smartcard-lock-on-removal'
-    }
-    default: {
-      err('How??')
+  if $oidc {
+    $enable_smartcard = ''
+  } else {
+    case $smartcard {
+      'disabled': {
+        $enable_smartcard = ''
+      }
+      'enabled': {
+        $enable_smartcard = 'with-smartcard'
+      }
+      'required': {
+        $enable_smartcard = 'with-smartcard-required'
+      }
+      'lock-on-removal': {
+        $enable_smartcard = 'with-smartcard-lock-on-removal'
+      }
+      default: {
+        err('How??')
+      }
     }
   }
 
   exec { 'Enable SSSD Authentication':
     command     => "${enablesssd} ${enable_smartcard}",
-    subscribe   => [
-      Exec['Join'],
-    ],
     path        => $facts['path'],
     refreshonly => true,
     require     => [
