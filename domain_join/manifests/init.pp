@@ -73,9 +73,9 @@ class domain_join (
   Boolean                                                    $update_os_info       = false,
   Boolean                                                    $enable_smartcard_ssh = false,
   Boolean                                                    $oidc                 = false,
-  Optional[String]                                           $client_id,
-  Optional[String]                                           $client_secret,
-  Optional[String]                                           $tenant_id
+  Optional[String]                                           $client_id            = undef,
+  Optional[String]                                           $client_secret        = undef,
+  Optional[String]                                           $tenant_id            = undef
 ) {
   if $override_domain {
     $currdomain = $override_domain
@@ -161,7 +161,6 @@ class domain_join (
       ensure => installed,
     }
   }
-  
 
   if $ad_trust != undef {
     file { '/etc/sssd/pki':
