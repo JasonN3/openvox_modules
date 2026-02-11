@@ -2,13 +2,13 @@
 ### Option 1:
 1. Clone the repo and use the modules  
 ```bash
-git clone https://github.com/JasonN3/puppet_modules.git
+git clone https://github.com/JasonN3/openvox_modules.git
 ```
 ### Option 2:
-1. Edit your Puppetfile so r10k will clone the repo:  
+1. Edit your Puppetfile so g10k will clone the repo:  
 ```
 mod 'github',
-  :git          => 'https://github.com/JasonN3/puppet_modules.git',
+  :git          => 'https://github.com/JasonN3/openvox_modules.git',
   :ref          => 'main',
   :install_path => 'git'
 ```
