@@ -77,6 +77,24 @@ class domain_join (
   Optional[Sensitive[String]]                                $client_secret        = undef,
   Optional[String]                                           $tenant_id            = undef
 ) {
+  if $oidc {
+    if !$client_id {
+      fail('domain_join: client_id must be provided when oidc is enabled')
+    }
+    if !$client_secret {
+      fail('domain_join: client_secret must be provided when oidc is enabled')
+    }
+    if !$tenant_id {
+      fail('domain_join: tenant_id must be provided when oidc is enabled')
+    }
+  } else {
+    if !username {
+      fail('domain_join: username must be provided when oidc is disbled')
+    }
+    if !sensitive_password {
+      fail('domain_join: sensitive_password must be provided when oidc is disbled')
+    }
+  }
   if $override_domain {
     $currdomain = $override_domain
     # This is only used if $override_domain is defined
